@@ -1,6 +1,24 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 
-const transcriptsData: any = {
+interface Y {
+  sentence_id: string,
+  text:string
+}
+interface T {
+  start_time: string,
+  end_time: string,
+  phrases: Y[],
+  sequence_number: Number
+}
+
+interface Transcript {
+  video_id: string,
+  language: string,
+  captions: T[],
+}
+interface TranscriptsData {
+  [key: string]: Transcript; // This allows dynamic keys of type string
+}
+const transcriptsData: TranscriptsData = {
   ykG8dVplZ_g: {
     video_id: 'ykG8dVplZ_g',
     language: 'de',
@@ -378,12 +396,13 @@ const transcriptsData: any = {
   },
 };
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { videoId } = req.query as { videoId: string };
-  const { StartFromPosition, StartFromCaptionId, BlockSize = 100 } = req.query;
-
-  if (req.method === 'GET') {
-    const transcriptResponse: any = transcriptsData[videoId as string];
-    Response.json(transcriptResponse);
+export async function GET(request: Request,  { params }: { params: { videoid: string } }) {
+    const videoId = params.videoid; // Extract videoId from params
+    if (transcriptsData[videoId] && transcriptsData[videoId].video_id === videoId) {
+        console.log("Found matching video_id:", transcriptsData[videoId].video_id);
+        // Do something with the matching transcript
+        return Response.json(transcriptsData)
+      } else {
+        console.log("No matching video_id found.");
+      }
   }
-}
